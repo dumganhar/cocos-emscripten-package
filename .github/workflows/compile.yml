@@ -65,16 +65,26 @@ jobs:
 
       - name: Compile
         run: |
+          core_count=$(nproc)
+          echo "CPU core count：$core_count"
           mkdir build
           mkdir dist
           cd build
-          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
-          core_count=$(nproc)
-          echo "CPU core count：$core_count"
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_WASM=1
+          
           emmake make -j${core_count}
           cp *.js ../dist
           cp *.wasm ../dist
-          echo "============== Compile Successfully! =============="
+          echo "============== Compile WASM Successfully! =============="
+
+          cd ..
+          rm -rf build
+          cd build
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_WASM=0
+          emmake make -j${core_count}
+          cp *.js ../dist
+          cp *.mem ../dist
+          echo "============== Compile ASMJS Successfully! =============="
 
       - name: Upload Artifact
         if: github.event_name != 'release'
