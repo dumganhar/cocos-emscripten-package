@@ -1,0 +1,95 @@
+name: Compile Emscripten Library
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  release:
+    types: [published]
+
+# github.head_ref is only defined on pull_request events
+concurrency:
+  group: ${{ github.workflow }}-${{ github.actor }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    name: "Emscripten"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: Setup emsdk
+        uses: dumganhar/setup-emsdk@997d2cde2deabda085a11f98e86e842915b0e846
+        with:
+          version: 3.1.41
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Verify
+        run: |
+          which emcc
+          emcc -v
+          which emcmake
+          which emmake
+
+      # - name: Install ninja
+      #   run: |
+      #     if ! command -v ninja &> /dev/null; then
+      #         echo "Ninja not found, installing..."
+      #         # sudo apt update
+      #         sudo apt install ninja-build
+      #     else
+      #         echo "Ninja is already installed."
+      #     fi
+      #     which ninja
+
+      - name: Compile
+        run: |
+          mkdir build
+          mkdir dist
+          cd build
+          emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
+          core_count=$(nproc)
+          echo "CPU core count：$core_count"
+          emmake make -j${core_count}
+          cp *.js ../dist
+          cp *.wasm ../dist
+          echo "============== Compile Successfully! =============="
+
+      - name: Upload Artifact
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v3
+        with: 
+          name: cocos.zip
+          path: ./dist
+
+      - name: Pack dist files
+        if: github.event_name == 'release'
+        uses: thedoctor0/zip-release@a24011d8d445e4da5935a7e73c1f98e22a439464
+        with:
+          type: 'zip'
+          directory: './dist'
+          path: '.'
+          filename: 'cocos.zip'
+
+      - name: Show Files in dist directory
+        if: github.event_name == 'release'
+        run: |
+          ls -l ./dist
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        uses: svenstaro/upload-release-action@1beeb572c19a9242f4361f4cee78f8e0d9aec5df
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./dist/cocos.zip
+          asset_name: cocos.zip
+          tag: ${{ github.ref }}

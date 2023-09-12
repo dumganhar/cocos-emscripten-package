@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "nodejs-file-downloader": "^4.12.1",
+    "unzip": "^0.1.11"
+  },
+
+  "overrides": {
+    "graceful-fs": "^4.2.11"
+  }
+}

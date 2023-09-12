@@ -1,0 +1,19 @@
+{
+	"libs": [
+		{
+			"name": "spine",
+			"url": "https://github.com/dumganhar/spine-wasm/releases/download/v3.8.2-r3/spine.zip",
+			"md5": "f2dbb6e569dd1709a8cd0c2d93f5d20b"
+		},
+		{
+			"name": "box2d",
+			"url": "https://github.com/dumganhar/box2d_wasm/releases/download/cc-0.8.1/libbox2d-fat.zip",
+			"md5": ""
+		},
+		{
+			"name": "physx",
+			"url": "https://github.com/dumganhar/PhysX/releases/download/cc-0.8.5/physx-fat.zip",
+			"md5": ""
+		}
+	]
+}
