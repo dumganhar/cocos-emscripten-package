@@ -53,10 +53,14 @@ jobs:
 
       - name: Npm install
         run: |
+          node -v
+          npm -v
           npm ci
 
       - name: Download Libraries
         run: |
+          mkdir -p downloaded
+          mkdir -p libs
           node sync-libs.js
 
       - name: Compile

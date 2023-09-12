@@ -11,33 +11,6 @@ console.log(`configJsonStr: ${configJsonStr}`);
 
 const configObj = JSON.parse(configJsonStr);
 
-
-
-
-
-// async function downloadFile(url, dest) {
-// 	return new Promise((resolve, reject)=>{
-// 		var stream = fs.createWriteStream(dest);
-
-// 		console.log(`Downloading ${url} to ${dest}`);
-// 		var request = https.get(url, function(response) {
-// 			response.pipe(stream);
-
-// 			stream.on('finish', function() {
-// 				stream.close(()=>{
-// 					console.log(`Finish ${url}`);
-// 					resolve();
-// 				});  // close() is async, call cb after close completes.
-// 			});
-// 		}).on('error', (err) => {
-// 			reject();
-// 		});
-// 	});
-
-// };
-
-let succeedCount = 0;
-
 async function downloadFile(url, directory) {
 	console.info(`==> Download: ${url} to ${directory}`);
 	const downloader = new Downloader({
@@ -48,12 +21,7 @@ async function downloadFile(url, directory) {
     },
   });
 
-  try {
-    await downloader.download();
-    succeedCount++;
-  } catch (error) {
-    console.error(error);
-  }
+  await downloader.download();
 }
 
 async function unzipFile(zipPath, directory) {
@@ -85,12 +53,12 @@ async function main() {
 
 	for (const lib of configObj.libs) {
 		const fileName = path.basename(lib.url);
-		await downloadFile(lib.url, `downloaded`).then((err)=>{
-			console.log(err);
+		await downloadFile(lib.url, `downloaded`).then(()=>{
 			unzipFile(`downloaded/${fileName}`, `libs`);
+		}).catch(()=>{
+			process.exit(1);
 		});
 	}
-
 }
 
 main();
