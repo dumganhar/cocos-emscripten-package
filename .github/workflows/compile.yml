@@ -91,7 +91,7 @@ jobs:
         if: github.event_name != 'release'
         uses: actions/upload-artifact@v3
         with: 
-          name: cocos.zip
+          name: cocos
           path: ./dist
 
       - name: Pack dist files
