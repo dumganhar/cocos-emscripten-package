@@ -51,6 +51,14 @@ jobs:
       #     fi
       #     which ninja
 
+      - name: Npm install
+        run: |
+          npm ci
+
+      - name: Download Libraries
+        run: |
+          node sync-libs.js
+
       - name: Compile
         run: |
           mkdir build
