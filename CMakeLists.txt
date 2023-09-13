@@ -35,15 +35,15 @@ endif()
 set(EMS_LINK_FLAGS "${OPT_FLAGS} \
 		--no-entry --bind \
 		--closure 1 \
+		-s EXPORT_NAME='spineWasm' \
 		-s WASM=${BUILD_WASM} \
 		-s INITIAL_MEMORY=33554432 \
 		-s ALLOW_MEMORY_GROWTH=1 \
 		-s DYNAMIC_EXECUTION=0 \
-		-s ERROR_ON_UNDEFINED_SYMBOLS=0
+		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		-s USE_ES6_IMPORT_META=0 \
 		-s EXPORT_ES6=1 \
 		-s MODULARIZE=1 \
-		-s EXPORT_NAME='spineWasm' \
 		-s ENVIRONMENT=web \
 		-s FILESYSTEM=0 \
 		-s NO_EXIT_RUNTIME=1 \
