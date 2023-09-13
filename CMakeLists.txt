@@ -27,14 +27,16 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" CC_BUILD_TYPE)
 
 if(BUILD_WASM)
 	set(EM_TYPE "wasm")
+	set(CLOSURE_FLAG 1)
 else()
 	set(EM_TYPE "asm")
+	set(CLOSURE_FLAG 0)
 endif()
 
 
 set(EMS_LINK_FLAGS "${OPT_FLAGS} \
 		--no-entry --bind \
-		--closure 1 \
+		--closure ${CLOSURE_FLAG} \
 		-s EXPORT_NAME='spineWasm' \
 		-s WASM=${BUILD_WASM} \
 		-s INITIAL_MEMORY=33554432 \
@@ -55,6 +57,8 @@ set(EMS_LINK_FLAGS "${OPT_FLAGS} \
 		${CMAKE_CURRENT_SOURCE_DIR}/libs/libbox2d-fat.release.a \
 		-Wl,--no-whole-archive"
 )
+
+
 
 
 add_library(physx STATIC IMPORTED GLOBAL)
