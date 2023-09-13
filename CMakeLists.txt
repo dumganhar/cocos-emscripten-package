@@ -32,9 +32,22 @@ else()
 endif()
 
 
-set(EMS_LINK_FLAGS "${OPT_FLAGS} -s WASM=${BUILD_WASM} -s INITIAL_MEMORY=33554432 -s ALLOW_MEMORY_GROWTH=1 -s DYNAMIC_EXECUTION=0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-		--no-entry --bind -s USE_ES6_IMPORT_META=0 -s EXPORT_ES6=1 -s MODULARIZE=1 -s EXPORT_NAME='spineWasm' \
-		-s ENVIRONMENT=web -s FILESYSTEM=0 -s NO_EXIT_RUNTIME=1 -s LLD_REPORT_UNDEFINED \
+set(EMS_LINK_FLAGS "${OPT_FLAGS} \
+		--no-entry --bind \
+		--closure 1 \
+		-s WASM=${BUILD_WASM} \
+		-s INITIAL_MEMORY=33554432 \
+		-s ALLOW_MEMORY_GROWTH=1 \
+		-s DYNAMIC_EXECUTION=0 \
+		-s ERROR_ON_UNDEFINED_SYMBOLS=0
+		-s USE_ES6_IMPORT_META=0 \
+		-s EXPORT_ES6=1 \
+		-s MODULARIZE=1 \
+		-s EXPORT_NAME='spineWasm' \
+		-s ENVIRONMENT=web \
+		-s FILESYSTEM=0 \
+		-s NO_EXIT_RUNTIME=1 \
+		-s LLD_REPORT_UNDEFINED \
 		-s MIN_SAFARI_VERSION=110000 \
 		--js-library ../library_spine.js -Wl,--whole-archive \
 		${CMAKE_CURRENT_SOURCE_DIR}/libs/libspine_static.a \
