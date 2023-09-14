@@ -51,7 +51,9 @@ set(EMS_LINK_FLAGS "${OPT_FLAGS} \
 		-s NO_EXIT_RUNTIME=1 \
 		-s LLD_REPORT_UNDEFINED \
 		-s MIN_SAFARI_VERSION=110000 \
-		--js-library ../library_spine.js -Wl,--whole-archive \
+		-s EXPORTED_RUNTIME_METHODS=ccall \
+		--js-library ../js-hooks/library_spine.js \
+		-Wl,--whole-archive \
 		${CMAKE_CURRENT_SOURCE_DIR}/libs/libspine_static.a \
 		${CMAKE_CURRENT_SOURCE_DIR}/libs/physx-fat.release.a \
 		${CMAKE_CURRENT_SOURCE_DIR}/libs/libbox2d-fat.release.a \
@@ -59,29 +61,69 @@ set(EMS_LINK_FLAGS "${OPT_FLAGS} \
 )
 
 
-
-
-add_library(physx STATIC IMPORTED GLOBAL)
-set_target_properties(physx PROPERTIES
-  IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/physx-fat.release.a
+set(WEBGPU_LINK_FLAGS "-s USE_WEBGPU=1 \
+	--js-library ../js-hooks/callbacks.js \
+	-Wl,--whole-archive \
+	${CMAKE_CURRENT_SOURCE_DIR}/libs/libwebgpu_wasm.a \
+	${CMAKE_CURRENT_SOURCE_DIR}/libs/release/libtwgsl-fat.release.a \
+	${CMAKE_CURRENT_SOURCE_DIR}/libs/release/libglslang-fat.release.a \
+	-Wl,--no-whole-archive"
 )
 
-add_library(box2d STATIC IMPORTED GLOBAL)
-set_target_properties(box2d PROPERTIES
-  IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/libbox2d-fat.release.a
-)
+string(CONCAT CC_FINAL_LINK_FLAGS "${EMS_LINK_FLAGS}" " " "${WEBGPU_LINK_FLAGS}")
 
-add_library(spine_static STATIC IMPORTED GLOBAL)
-set_target_properties(spine_static PROPERTIES
-  IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/libspine_static.a
-)
+
+# add_library(physx STATIC IMPORTED GLOBAL)
+# set_target_properties(physx PROPERTIES
+#   IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/physx-fat.release.a
+# )
+
+# add_library(box2d STATIC IMPORTED GLOBAL)
+# set_target_properties(box2d PROPERTIES
+#   IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/libbox2d-fat.release.a
+# )
+
+# add_library(spine_static STATIC IMPORTED GLOBAL)
+# set_target_properties(spine_static PROPERTIES
+#   IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/libspine_static.a
+# )
+
+# add_library(twgsl STATIC IMPORTED GLOBAL)
+# set_target_properties(twgsl PROPERTIES
+#   IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/libtwgsl-fat.release.a
+# )
+
+# add_library(glslang STATIC IMPORTED GLOBAL)
+# set_target_properties(glslang PROPERTIES
+#   IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/libglslang-fat.release.a
+# )
 
 add_executable(${COCOS_NAME} empty.cpp)
 
-target_link_libraries(${COCOS_NAME}
-	PRIVATE ${APP_NAME} physx box2d spine_static
-)
+target_link_options(${COCOS_NAME} PRIVATE -s EXPORTED_FUNCTIONS=["_spirv_to_wgsl"])
+# target_link_options(${COCOS_NAME} PRIVATE -s EXPORTED_FUNCTIONS=["_test","_spirv_to_wgsl","_free","_malloc"])
+# target_link_options(${COCOS_NAME} PRIVATE -s EXPORTED_FUNCTIONS=["_free","_malloc"])
 
-set_target_properties(${COCOS_NAME} PROPERTIES LINK_FLAGS ${EMS_LINK_FLAGS})
+em_link_pre_js(${COCOS_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/js-hooks/glslang.pre.js")
+em_link_pre_js(${COCOS_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/js-hooks/twgsl.pre.js")
+
+# target_link_libraries(${COCOS_NAME}
+# 	PRIVATE ${APP_NAME} physx box2d spine_static
+# )
+
+# if (CMAKE_HOST_SYSTEM MATCHES "Windows.*")
+#     # There are several ways we could append one file to another on Windows, but unfortunately 'cat' is not one of them
+#     # (there is no 'cat' command in cmd). Also, since this will ultimately run in cmd and not pwsh, we need to ensure
+#     # Windows path separators are used.
+#     file(TO_NATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}/spine.release.wasm.js" glslang_js_path)
+#     file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/js-hooks/glslang.after.js" glslang_after_js_path)
+#     add_custom_command(TARGET ${COCOS_NAME} POST_BUILD
+#         COMMAND type "${glslang_after_js_path}" >> "${glslang_js_path}")
+# else()
+#     add_custom_command(TARGET ${COCOS_NAME} POST_BUILD
+#         COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/js-hooks/glslang.after.js >> ${CMAKE_CURRENT_BINARY_DIR}/spine.release.wasm.js)
+# endif()
+
+set_target_properties(${COCOS_NAME} PROPERTIES LINK_FLAGS ${CC_FINAL_LINK_FLAGS})
 set_target_properties(${COCOS_NAME} PROPERTIES OUTPUT_NAME "spine.${CC_BUILD_TYPE}.${EM_TYPE}")
 

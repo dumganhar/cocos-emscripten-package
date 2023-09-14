@@ -25,6 +25,7 @@ async function downloadFile(url, directory) {
 }
 
 async function unzipFile(zipPath, directory) {
+	console.log(`unzipFile:${zipPath} to ${directory}`);
 	fs.createReadStream(zipPath).pipe(unzip.Extract({ path: directory }));
 }
 
